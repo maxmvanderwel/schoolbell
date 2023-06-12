@@ -16,7 +16,7 @@ class BellScheduleView(View):
         })
 
     def post(self, request):
-        form = BellScheduleForm(request.POST)
+        form = BellScheduleForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
         return redirect('bell_schedule')
@@ -30,8 +30,7 @@ def delete_audio_file(request, pk):
     schedule = BellSchedule.objects.get(pk=pk)
     if schedule.audio_file:
         schedule.audio_file.delete()
-        schedule.audio_file = None
-        schedule.save()
+        schedule.reset_audio_file()
     return redirect('bell_schedule')
 
 def reset_audio_files(request):

@@ -1,60 +1,56 @@
+<!-- bellapp/templates/bellapp/bell_schedule.html -->
 <!DOCTYPE html>
 <html>
 <head>
     <title>School Bell Schedule</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'bellapp/style.css' %}">
 </head>
 <body>
     <h1>School Bell Schedule</h1>
 
-    {% for day in days %}
-        <h2>{{ day|capfirst }}</h2>
+    <div class="container">
+        <h2>Add Bell Schedule</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit">Add Schedule</button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Bell Schedule List</h2>
         <table>
             <tr>
                 <th>Time</th>
+                <th>Day</th>
                 <th>Audio File</th>
                 <th>Actions</th>
             </tr>
-            {% for bell_schedule in bell_schedules %}
-                {% if bell_schedule.day == day %}
-                    <tr>
-                        <td>{{ bell_schedule.time }}</td>
-                        <td>{{ bell_schedule.audio_file }}</td>
-                        <td>
-                            <form action="{% url 'delete_bell_schedule' bell_schedule.pk %}" method="post">
-                                {% csrf_token %}
-                                <button type="submit">Delete</button>
-                            </form>
-                            {% if bell_schedule.audio_file %}
-                                <form action="{% url 'delete_audio_file' bell_schedule.pk %}" method="post">
-                                    {% csrf_token %}
-                                    <button type="submit">Delete Audio</button>
-                                </form>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endif %}
+            {% for schedule in schedules %}
+                <tr>
+                    <td>{{ schedule.time }}</td>
+                    <td>{{ schedule.get_day_display }}</td>
+                    <td>{{ schedule.audio_file.name }}</td>
+                    <td>
+                        <a href="{% url 'delete_bell_schedule' schedule.pk %}">Delete</a>
+                        <a href="{% url 'delete_audio_file' schedule.pk %}">Delete Audio</a>
+                    </td>
+                </tr>
             {% endfor %}
         </table>
-    {% endfor %}
+    </div>
 
-    <h2>Add New Bell Schedule</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Add</button>
-    </form>
-
-    <h2>Bulk Edit Audio</h2>
-    <form method="post" enctype="multipart/form-data" action="{% url 'bulk_edit_audio' %}">
-        {% csrf_token %}
-        <input type="file" name="new_audio_file">
-        <button type="submit">Update Audio</button>
-    </form>
-
-    <h2>Reset Audio Files</h2>
-    <form action="{% url 'reset_audio_files' %}" method="post">
-        {% csrf_token %}
-        <button type="submit">Reset to Default Audio</button>
-    </form>
+    <div class="container">
+        <h2>Bulk Edit Audio</h2>
+        <form method="post" enctype="multipart/form-data" action="{% url 'bulk_edit_audio' %}">
+            {% csrf_token %}
+            {{ bulk_edit_form.as_p }}
+            <button type="submit">Update Audio for All Schedules</button>
+        </form>
+        <form method="post" action="{% url 'reset_audio_files' %}">
+            {% csrf_token %}
+            <button type="submit">Reset Audio for All Schedules</button>
+        </form>
+    </div>
 </body>
 </html>
