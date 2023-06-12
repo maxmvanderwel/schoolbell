@@ -6,13 +6,27 @@
     <link rel="stylesheet" type="text/css" href="{% static 'bellapp/style.css' %}">
 </head>
 <body>
-    <h1>School Bell Schedule</h1>
-
     <div class="container">
-        <h2>Add Bell Schedule</h2>
-        <form method="post" enctype="multipart/form-data">
+        <h1>School Bell Schedule</h1>
+        <form method="post" enctype="multipart/form-data" action="{% url 'add_bell_schedule' %}">
             {% csrf_token %}
-            {{ form.as_p }}
+            <label for="time">Time:</label>
+            <input type="time" id="time" name="time" required>
+            <label for="day">Day:</label>
+            <select id="day" name="day" required>
+                <option value="1">Monday</option>
+                <option value="2">Tuesday</option>
+                <option value="3">Wednesday</option>
+                <option value="4">Thursday</option>
+                <option value="5">Friday</option>
+            </select>
+            <label for="audio_file">Audio File:</label>
+            <select id="audio_file" name="audio_file" required>
+                <option value="" selected>Default.mp3</option>
+                {% for audio in audio_files %}
+                    <option value="{{ audio.pk }}">{{ audio.name }}</option>
+                {% endfor %}
+            </select>
             <button type="submit">Add Schedule</button>
         </form>
     </div>
@@ -26,31 +40,24 @@
                 <th>Audio File</th>
                 <th>Actions</th>
             </tr>
-            {% for schedule in schedules %}
-                <tr>
-                    <td>{{ schedule.time }}</td>
-                    <td>{{ schedule.get_day_display }}</td>
-                    <td>{{ schedule.audio_file.name }}</td>
-                    <td>
-                        <a href="{% url 'delete_bell_schedule' schedule.pk %}">Delete</a>
-                        <a href="{% url 'delete_audio_file' schedule.pk %}">Delete Audio</a>
-                    </td>
-                </tr>
+            {% for day in days %}
+                {% if day.schedules %}
+                    <tr>
+                        <td colspan="4" class="day-header">{{ day.get_day_display }}</td>
+                    </tr>
+                    {% for schedule in day.schedules %}
+                        <tr>
+                            <td>{{ schedule.time }}</td>
+                            <td>{{ schedule.get_day_display }}</td>
+                            <td>{{ schedule.audio_file.name }}</td>
+                            <td>
+                                <a href="{% url 'delete_bell_schedule' schedule.pk %}">Delete</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
             {% endfor %}
         </table>
-    </div>
-
-    <div class="container">
-        <h2>Bulk Edit Audio</h2>
-        <form method="post" enctype="multipart/form-data" action="{% url 'bulk_edit_audio' %}">
-            {% csrf_token %}
-            {{ bulk_edit_form.as_p }}
-            <button type="submit">Update Audio for All Schedules</button>
-        </form>
-        <form method="post" action="{% url 'reset_audio_files' %}">
-            {% csrf_token %}
-            <button type="submit">Reset Audio for All Schedules</button>
-        </form>
     </div>
 </body>
 </html>
