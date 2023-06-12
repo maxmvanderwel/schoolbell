@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>School Bell Schedule</title>
+</head>
+<body>
+    <h1>School Bell Schedule</h1>
+
+    {% for day in days %}
+        <h2>{{ day|capfirst }}</h2>
+        <table>
+            <tr>
+                <th>Time</th>
+                <th>Audio File</th>
+                <th>Actions</th>
+            </tr>
+            {% for bell_schedule in bell_schedules %}
+                {% if bell_schedule.day == day %}
+                    <tr>
+                        <td>{{ bell_schedule.time }}</td>
+                        <td>{{ bell_schedule.audio_file }}</td>
+                        <td>
+                            <form action="{% url 'delete_bell_schedule' bell_schedule.pk %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit">Delete</button>
+                            </form>
+                            {% if bell_schedule.audio_file %}
+                                <form action="{% url 'delete_audio_file' bell_schedule.pk %}" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit">Delete Audio</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    {% endfor %}
+
+    <h2>Add New Bell Schedule</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add</button>
+    </form>
+
+    <h2>Bulk Edit Audio</h2>
+    <form method="post" enctype="multipart/form-data" action="{% url 'bulk_edit_audio' %}">
+        {% csrf_token %}
+        <input type="file" name="new_audio_file">
+        <button type="submit">Update Audio</button>
+    </form>
+
+    <h2>Reset Audio Files</h2>
+    <form action="{% url 'reset_audio_files' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Reset to Default Audio</button>
+    </form>
+</body>
+</html>
